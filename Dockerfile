@@ -1,35 +1,36 @@
-# Stage 1: Build Angular app
+# Stage 1: Build Angular application
 FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copy package.json and package-lock.json
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-# Copy the entire project
+# Copy the application source code
 COPY . .
 
-# Build the Angular project (default prod config)
-RUN npm run build --prod
+# Build the Angular application for production
+RUN npm run build -- --prod
 
-# Replace 'sample-app' with your actual dist folder name after build
-# You can confirm it by checking: `ls dist/`
-# For example, if `dist/sample-app` is the output, use that below
-
-# Stage 2: Serve with Nginx
+# Stage 2: Serve the Angular application using Nginx
 FROM nginx:alpine
 
-# Clean default nginx html
-RUN rm -rf /usr/share/nginx/html/*
+# Remove default Nginx configuration
+RUN rm /etc/nginx/conf.d/default.conf
 
-# Copy built Angular app
-COPY --from=builder /app/dist/sample-app /usr/share/nginx/html
+# Replace this with your actual Angular project name inside 'dist/' (after build)
+# Run `ls dist/` locally to confirm it
+COPY --from=builder /app/dist/your-project-name /usr/share/nginx/html
 
-# Copy default nginx config (optional for SPA routing)
+# Optional: Only include this line if 'nginx.conf' exists in your root directory
+# If you don't have one yet, create it or comment out this line
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Expose port 80
 EXPOSE 80
 
+# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
-
