@@ -1,6 +1,5 @@
-# Stage 1: Build Angular application
+# Stage 1: Build the Angular application
 FROM node:18-alpine AS builder
-
 WORKDIR /app
 
 # Copy package.json and package-lock.json
@@ -21,16 +20,14 @@ FROM nginx:alpine
 # Remove default Nginx configuration
 RUN rm /etc/nginx/conf.d/default.conf
 
-# Replace this with your actual Angular project name inside 'dist/' (after build)
-# Run `ls dist/` locally to confirm it
-COPY --from=builder /app/dist/your-project-name /usr/share/nginx/html
+# Copy the built Angular application from the builder stage
+COPY --from=builder /app/dist/<your-project-name> /usr/share/nginx/html
 
-# Optional: Only include this line if 'nginx.conf' exists in your root directory
-# If you don't have one yet, create it or comment out this line
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy custom Nginx configuration (optional)
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
+# Expose port 80 for HTTP
 EXPOSE 80
 
-# Start Nginx
+# Start Nginx when the container starts
 CMD ["nginx", "-g", "daemon off;"]
