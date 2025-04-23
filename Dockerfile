@@ -30,6 +30,8 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Expose port 80 for HTTP
 EXPOSE 80
 
+ #Use a non-root user for Nginx (security best practice)
+ RUN adduser -D -u 1001 nginx
 
 
 # Set user and group for Nginx processes
