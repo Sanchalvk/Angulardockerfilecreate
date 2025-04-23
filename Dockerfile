@@ -1,45 +1,29 @@
-    # Stage 1: Build the Angular application
-    FROM node:18-alpine AS builder
-    WORKDIR /app
+# Use an official Node.js runtime as the base image
+FROM node:16-alpine
 
-    # Copy package.json and package-lock.json
-    COPY package*.json ./
+# Set the working directory inside the container
+WORKDIR /app
 
-    # Install dependencies
-    RUN npm ci --only=production
+# Copy package.json and package-lock.json files into the working directory
+COPY package*.json ./
 
-    # Copy the application source code
-    COPY . ./
+# Install the dependencies
+RUN npm install
 
-    # Build the Angular application for production
-    RUN npm run build -- --output-path=dist
+# Copy the entire Angular project into the working directory
+COPY . .
 
-    # Stage 2: Serve the Angular application using Nginx
-    FROM nginx:1.23-alpine
+# Build the Angular application
+RUN npm run build --prod
 
-    # Set the document root
-    RUN rm -rf /usr/share/nginx/html
-    RUN mkdir -p /usr/share/nginx/html
+# Use an official NGINX image for serving the Angular app
+FROM nginx:alpine
 
-    # Create cache directory and set permissions
-    RUN mkdir -p /var/cache/nginx
-    RUN chown -R nginx:nginx /var/cache/nginx
+# Copy built Angular files to the NGINX serving directory
+COPY --from=0 /app/dist/YOUR_PROJECT_NAME /usr/share/nginx/html
 
-    # Copy the built Angular application from the builder stage
-    COPY --from=builder /app/dist /usr/share/nginx/html
+# Expose the port the app runs on
+EXPOSE 80
 
-    # Copy custom Nginx configuration (optional)
-    COPY ./nginx.conf /etc/nginx/conf.d/default.conf
-
-    # Expose port 80 for HTTP
-    EXPOSE 80
-
-    # Use a non-root user for Nginx (security best practice)
-    RUN adduser -D -u 1001 nginx
-
-    # Set user and group for Nginx processes
-    USER nginx
-
-    # Start Nginx
-    CMD ["nginx", "-g", "daemon off;"]
-    
+# Start NGINX
+CMD ["nginx", "-g", "daemon off;"]
