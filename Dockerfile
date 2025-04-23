@@ -6,28 +6,32 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci --only=production
 
 # Copy the application source code
-COPY . .
+COPY . ./
 
 # Build the Angular application for production
-RUN npm run build -- --prod
+RUN npm run build -- --output-path=dist
 
 # Stage 2: Serve the Angular application using Nginx
-FROM nginx:alpine
+FROM nginx:1.23-alpine
 
-# Remove default Nginx configuration
-RUN rm /etc/nginx/conf.d/default.conf
+# Set the document root
+RUN rm -rf /usr/share/nginx/html
+RUN mkdir -p /usr/share/nginx/html
 
 # Copy the built Angular application from the builder stage
-COPY --from=builder /app/dist/<your-project-name> /usr/share/nginx/html
-
-# Copy custom Nginx configuration (optional)
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Expose port 80 for HTTP
 EXPOSE 80
 
-# Start Nginx when the container starts
+# Use a non-root user for Nginx (security best practice)
+RUN adduser -D -u 1001 nginx
+
+# Set user and group for Nginx processes
+USER nginx
+
+# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
