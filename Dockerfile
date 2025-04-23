@@ -6,13 +6,16 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm ci 
 
 # Copy the application source code
 COPY . ./
 
+# Set environment variable (optional, but can help in some cases)
+ENV PATH="/app/node_modules/.bin:$PATH"
+
 # Build the Angular application for production
-RUN npm run build -- --output-path=dist
+RUN npm run build 
 
 # Stage 2: Serve the Angular application using Nginx
 FROM nginx:1.23-alpine
