@@ -24,7 +24,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t sanchalkhedkar/angularapp:latest ./autoca-live-divingsum-main
+          docker build -t sanchalkhedkar/angularapp:latest .
 
       - name: Push Docker Image
         run: |
