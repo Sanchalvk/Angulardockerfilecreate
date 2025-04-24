@@ -1,19 +1,13 @@
-FROM node:18.13.0 as build
-
 WORKDIR /app
-
+# Copy package.json and package-lock.json
 COPY package*.json ./
-
+# Install dependencies
 RUN npm install
-
-RUN npm install -g @angular/cli
-
+# Copy the rest of the application files
 COPY . .
-
-RUN ng build 
-
-FROM nginx:latest
-
-COPY --from=build app/dist/aftas-angular /usr/share/nginx/html
-
-EXPOSE 80
+# Build the application
+RUN npm run build
+# Expose port 4200
+EXPOSE 4200
+# Start the application
+CMD ["npm", "start"]
