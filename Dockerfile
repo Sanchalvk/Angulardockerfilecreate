@@ -1,13 +1,19 @@
-# Stage 1: Build the Angular application
-FROM node:alpine AS build
-WORKDIR /usr/src/app
-COPY package.json package-lock.json ./
-RUN npm install
-COPY .
-RUN npm run build --prod
+FROM node:18.13.0 as build
 
-# Stage 2: Serve the application using Nginx
-FROM nginx:alpine
-COPY --from=build /usr/src/app/dist/my-angular-app /usr/share/nginx/html
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+RUN npm install -g @angular/cli
+
+COPY . .
+
+RUN ng build --configuration=production
+
+FROM nginx:latest
+
+COPY --from=build app/dist/aftas-angular /usr/share/nginx/html
+
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
