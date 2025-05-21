@@ -45,4 +45,5 @@ jobs:
             description="Docker image for Angular application"
 
       - name: Output pushed image info
-        run: echo "Pushed image: ${{ env.DOCKER_REPO }}:${{ env.VERSION }}"
+        run: | 
+               echo "Pushed image: ${{ env.DOCKER_REPO }}:${{ env.VERSION }}"
