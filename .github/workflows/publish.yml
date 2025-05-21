@@ -9,7 +9,7 @@ on:
 env:
   DOCKER_REPO: sanchalkhedkar/asas # Defines your Docker Hub repository.
 
-jobs:
+jobs: 
   build_and_push:
     runs-on: ubuntu-latest # Standard runner environment.
 
