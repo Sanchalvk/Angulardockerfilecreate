@@ -2,7 +2,6 @@ name: Build and Push Docker Image
 
 on:
   push:
-    branches: [main]
     tags:
       - 'v*.*.*' # Trigger only on new Git tags like v1.0.0, v1.0.1 etc.
     # Removed 'branches: - main' as per request to only use tag-based versioning
@@ -37,8 +36,9 @@ jobs:
           tags: |
             # Rule: Apply Semantic Versioning tag (e.g., '1.0.0' from 'v1.0.0' Git tag)
             # This will only apply if the workflow was triggered by a 'v*.*.*' tag push.
-            # This is now the ONLY tagging rule.
-            type=semver,pattern=v{{version}},enable=${{ startsWith(github.ref, 'refs/tags/') }}
+            # The 'pattern' has been removed, as 'type=semver' typically handles 'v' prefixes automatically
+            # and is more robust without an explicit pattern unless a custom format is needed.
+            type=semver,enable=${{ startsWith(github.ref, 'refs/tags/') }}
 
       - name: Debug Docker metadata outputs (Optional - for troubleshooting)
         run: |
