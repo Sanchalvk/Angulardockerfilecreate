@@ -2,11 +2,8 @@ name: Build and Push Docker Image
 
 on:
   push:
-    branches:
-      - main
-      
     tags:
-      - 'v*.*.*'
+      - 'v*'  # triggers only on tags like v1 or v1.0.0
 
 env:
   DOCKER_REPO: sanchalkhedkar/asas
@@ -19,6 +16,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Extract version from tag
+        id: extract_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=$VERSION"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -28,23 +32,17 @@ jobs:
           username: sanchalkhedkar
           password: dckr_pat_yC7BqB9FPf8d_ZT9M_A4dktjrWo
 
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.DOCKER_REPO }}
-          tags: |
-            type=semver,pattern=v{{version}},enable=${{ startsWith(github.ref, 'refs/tags/') }}
-            type=sha,format=short,enable=${{ startsWith(github.ref, 'refs/heads/') }}
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ${{ env.DOCKER_REPO }}:${{ env.VERSION }}
+            ${{ env.DOCKER_REPO }}:latest  # Remove this line if you don’t want `latest`
+          labels: |
+            version=${{ env.VERSION }}
+            description="Docker image for Angular application"
 
       - name: Output pushed image info
-        run: | 
-               echo "Image pushed: ${{ steps.meta.outputs.tags }}"
+        run: echo "Pushed image: ${{ env.DOCKER_REPO }}:${{ env.VERSION }}"
