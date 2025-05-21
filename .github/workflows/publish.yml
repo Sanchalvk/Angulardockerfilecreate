@@ -33,8 +33,8 @@ jobs:
           images: ${{ env.DOCKER_REPO }}
           tags: |
             type=semver,pattern=v{{version}},enable=${{ startsWith(github.ref, 'refs/tags/') }}
-            type=ref,enable=true  # e.g. main, dev
-            type=sha,format=short,enable=true  # e.g. sha-abc1234
+            type=ref,enable=true
+            type=sha,format=short,enable=true
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
