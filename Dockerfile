@@ -1,6 +1,12 @@
 # Stage 1: Build Angular App
 FROM node:18-alpine AS builder
 
+# Set environment variables
+ARG APP_VERSION=dev
+ENV NODE_ENV=production \
+    APP_VERSION=$APP_VERSION
+
+
 WORKDIR /app
 
 # Install dependencies
