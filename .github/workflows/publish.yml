@@ -9,7 +9,7 @@ on:
 env:
   DOCKER_REPO: sanchalkhedkar/asas # Defines your Docker Hub repository.
 
-jobs: 
+jobs:
   build_and_push:
     runs-on: ubuntu-latest # Standard runner environment.
 
@@ -23,9 +23,11 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: sanchalkhedkar
-          password: dckr_pat_yC7BqB9FPf8d_ZT9M_A4dktjrWo
-          
+          # IMPORTANT: Use GitHub Secrets for username and password for security.
+          # NEVER hardcode credentials directly in the workflow file.
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Extract Docker metadata (tags and labels)
         id: meta # Assigns an ID to this step to reference its outputs later
         uses: docker/metadata-action@v5 # Action to generate Docker tags and labels
