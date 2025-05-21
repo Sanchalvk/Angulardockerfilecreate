@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      
     tags:
       - 'v*.*.*'
 
@@ -27,7 +26,6 @@ jobs:
         with:
           username: sanchalkhedkar
           password: dckr_pat_yC7BqB9FPf8d_ZT9M_A4dktjrWo
-
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -42,9 +40,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            v1.0.0  # Add this line to ensure the image is tagged with v1.0.0
           labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Output pushed image info
-        run: |
-              echo "Image pushed: ${{ steps.meta.outputs.tags }}"
