@@ -10,8 +10,8 @@ RUN npm ci
 # Copy application source code
 COPY . .
 
-# Install Angular CLI and build the app
-RUN npm install -g @angular/cli && \
+# Install specific Angular CLI version and build the app
+RUN npm install -g @angular/cli@<specific-version> && \
     ng build --configuration production
 
 # Stage 2: Serve app with Nginx
@@ -25,6 +25,9 @@ COPY --from=builder /app/dist/* /usr/share/nginx/html/
 
 # Expose port 80
 EXPOSE 80
+
+# Health check
+HEALTHCHECK CMD curl --fail http://localhost/ || exit 1
 
 # Start Nginx in the foreground
 CMD ["nginx", "-g", "daemon off;"]
