@@ -26,6 +26,7 @@ jobs:
         with:
           username: sanchalkhedkar
           password: dckr_pat_yC7BqB9FPf8d_ZT9M_A4dktjrWo
+
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -42,5 +43,5 @@ jobs:
           push: true
           tags: |
             ${{ steps.meta.outputs.tags }}
-            v1.0.0  # Add this line to ensure the image is tagged with v1.0.0
+            v1.0.0
           labels: ${{ steps.meta.outputs.labels }}
