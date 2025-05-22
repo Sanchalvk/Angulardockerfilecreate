@@ -17,20 +17,11 @@ jobs:
 
       - name: Extract version
         run: |
-             if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-               TAG_NAME=${GITHUB_REF#refs/tags/}         # frontend-1.0.0
-               VERSION=${TAG_NAME#frontend-}             # 1.0.0
-               APP_VERSION="frontend-$VERSION"
-             else
-               BRANCH_NAME=${GITHUB_REF#refs/heads/}     # main
-               APP_VERSION="frontend-$BRANCH_NAME"
-             fi
-         
-             echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
-             echo "Docker image tag will be: $DOCKER_REPO:$APP_VERSION"
-
-
-
+            VERSION=$(jq -r '.version' package.json)   # e.g. 1.0.0
+            APP_VERSION="TIMP-$VERSION"                # e.g. TIMP-1.0.0
+            echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
+            echo "Using image tag: $APP_VERSION"
+             
       - name: Log in to DockerHub
         run: echo "dckr_pat_yC7BqB9FPf8d_ZT9M_A4dktjrWo" | docker login -u "sanchalkhedkar" --password-stdin
 
