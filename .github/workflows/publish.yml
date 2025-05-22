@@ -18,11 +18,12 @@ jobs:
 
       - name: Extract version
         run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}         # e.g., frontend-1.0.0
-          VERSION=${TAG_NAME#frontend-}             # e.g., 1.0.0
-          APP_VERSION="frontend-$VERSION"           # frontend-1.0.0
-          echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
-          echo "Docker image tag will be: $DOCKER_REPO:$APP_VERSION"
+       
+           TAG_NAME=${GITHUB_REF#refs/tags/}        # frontend-1.0.0
+           VERSION=${TAG_NAME#frontend-}            # 1.0.0
+           APP_VERSION="frontend-$VERSION"          # frontend-1.0.0
+           echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
+
 
 
 
