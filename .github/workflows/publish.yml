@@ -28,7 +28,7 @@ jobs:
         run: |
           echo "Building Docker image with tag: $DOCKER_REPO:$APP_VERSION"
           docker build -t $DOCKER_REPO:$APP_VERSION .
-          docker tag $DOCKER_REPO:$APP_VERSION $DOCKER_REPO:latest
+          #docker tag $DOCKER_REPO:$APP_VERSION $DOCKER_REPO:latest
 
       - name: Push Docker image
         run: |
