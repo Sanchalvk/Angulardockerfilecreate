@@ -18,15 +18,11 @@ jobs:
 
       - name: Extract version
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            RAW_VERSION=${GITHUB_REF#refs/tags/frontend}
-            APP_VERSION="frontend-${RAW_VERSION}"
-          else
-            BRANCH_NAME=${GITHUB_REF#refs/heads/}
-            APP_VERSION="frontend-${BRANCH_NAME//\//-}"
-          fi
+          i TAG_NAME=${GITHUB_REF#refs/tags/}        # frontend1.0.0
+          VERSION=${TAG_NAME#frontend}             # 1.0.0
+          APP_VERSION="frontend-$VERSION"          # frontend-1.0.0
           echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
-          echo "Final Docker tag: $DOCKER_REPO:$APP_VERSION"
+          echo "Docker image tag will be: $DOCKER_REPO:$APP_VERSION""
 
 
 
