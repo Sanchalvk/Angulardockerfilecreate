@@ -32,6 +32,6 @@ jobs:
 
       - name: Push Docker image
         run: |
-          docker push $DOCKER_REPO:$APP_VERSION
-          docker push $DOCKER_REPO:latest
+         docker push your-docker-repo/your-image-name:${{ steps.version.outputs.APP_VERSION }}
+         docker push your-docker-repo/your-image-name:latest
 
