@@ -1,5 +1,9 @@
 name: Build and Push Docker Image
- env:
+on:
+ push:
+  branches: [main]
+ 
+env:
    DOCKER_REPO: sanchalkhedkar/asas
 
 jobs:
