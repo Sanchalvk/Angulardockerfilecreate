@@ -18,17 +18,19 @@ jobs:
 
       - name: Extract version
         run: |
-          VERSION=$(jq -r '.version' package.json)
-          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+         TAG_NAME=${GITHUB_REF#refs/tags/}
+          VERSION=${TAG_NAME#frontend}  # Remove 'frontend' prefix
+          echo "APP_VERSION=frontend-$VERSION" >> $GITHUB_ENV
+          echo "Final Docker tag: frontend-$VERSION"
+
 
       - name: Log in to DockerHub
         run: echo "dckr_pat_yC7BqB9FPf8d_ZT9M_A4dktjrWo" | docker login -u "sanchalkhedkar" --password-stdin
 
       - name: Build and tag Docker image
         run: |
-          echo "Building Docker image with tag: $DOCKER_REPO:$APP_VERSION"
-          docker build -t  $DOCKER_REPO:$APP_VERSION .
-          docker tag $DOCKER_REPO:$APP_VERSION $DOCKER_REPO
+           docker build -t $DOCKER_REPO:$APP_VERSION .
+           echo "Image tagged as: $DOCKER_REPO:$APP_VERSION"
 
       - name: Push Docker image
         run: |
