@@ -27,10 +27,10 @@ jobs:
       - name: Build and tag Docker image
         run: |
           echo "Building Docker image with tag: $DOCKER_REPO:$APP_VERSION"
-          docker build -t $DOCKER_REPO:$APP_VERSION .
-          docker tag $DOCKER_REPO:$APP_VERSION $DOCKER_REPO
+          docker build -t  Angular:$DOCKER_REPO:$APP_VERSION .
+          docker tag Angular:$DOCKER_REPO:$APP_VERSION $DOCKER_REPO
 
       - name: Push Docker image
         run: |
-          docker push $DOCKER_REPO:$APP_VERSION
+          docker push Angular:$DOCKER_REPO:$APP_VERSION
          # docker push $DOCKER_REPO:latest
