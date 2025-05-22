@@ -3,7 +3,7 @@ on:
  push:
   branches: [main]
   tags: 
-    - 'Angular*.*.*'
+    - 'frontend*.*.*'
    
 env:
    DOCKER_REPO: sanchalkhedkar/asas
@@ -18,11 +18,11 @@ jobs:
 
       - name: Extract version
         run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}        # Extracts tag, e.g., Angular1.0.0
-          VERSION=${TAG_NAME#Angular}               # Strips 'Angular' to get version (1.0.0)
+          TA TAG_NAME=${GITHUB_REF#refs/tags/}        # Extracts tag, e.g., frontend-1.0.0
+          VERSION=${TAG_NAME#frontend-}             # Strips 'frontend-' to get version (1.0.0)
           APP_VERSION="frontend-$VERSION"          # Adds frontend- as prefix (frontend-1.0.0)
           echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
-          echo "Docker image tag will be: $DOCKER_REPO:$APP_VERSION""
+          echo "Docker image tag will be: $DOCKER_REPO:$APP_VERSION"  # Prints the Docker image tag
 
 
 
