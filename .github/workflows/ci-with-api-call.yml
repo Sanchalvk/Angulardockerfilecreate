@@ -31,47 +31,49 @@ jobs:
       - name: Notify success via Adaptive Card
         if: success()
         run: |
-          curl -X POST https://webhook.site/12345678-aaaa-bbbb-cccc-1234567890ab \
+          curl -X POST https://webhook.site/abcdef12-3456-7890-abcd-ef1234567890 \
             -H "Content-Type: application/json" \
-            -d "{
-              \"type\": \"message\",
-              \"attachments\": [
-                {
-                  \"contentType\": \"application/vnd.microsoft.card.adaptive\",
-                  \"content\": {
-                    \"\$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",
-                    \"type\": \"AdaptiveCard\",
-                    \"version\": \"1.3\",
-                    \"body\": [
-                      {
-                        \"type\": \"TextBlock\",
-                        \"size\": \"Large\",
-                        \"weight\": \"Bolder\",
-                        \"color\": \"Good\",
-                        \"text\": \"✅ Build Succeeded!\"
-                      },
-                      {
-                        \"type\": \"TextBlock\",
-                        \"text\": \"Repository: Sanchalvk/Angulardockerfilecreate\",
-                        \"wrap\": true
-                      },
-                      {
-                        \"type\": \"TextBlock\",
-                        \"text\": \"Branch: main\",
-                        \"wrap\": true
-                      },
-                      {
-                        \"type\": \"TextBlock\",
-                        \"text\": \"Commit: 7ce8438b9a1eb677c8c699a4e0294f399b9ff970\",
-                        \"wrap\": true
-                      },
-                      {
-                        \"type\": \"TextBlock\",
-                        \"text\": \"Triggered by: Sanchalvk\",
-                        \"wrap\": true
-                      }
-                    ]
-                  }
-                }
-              ]
-            }"
+            -d @- << EOF
+{
+  "type": "message",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.3",
+        "body": [
+          {
+            "type": "TextBlock",
+            "size": "Large",
+            "weight": "Bolder",
+            "color": "Good",
+            "text": "✅ Build Succeeded!"
+          },
+          {
+            "type": "TextBlock",
+            "text": "Repository: Sanchalvk/Angulardockerfilecreate",
+            "wrap": true
+          },
+          {
+            "type": "TextBlock",
+            "text": "Branch: main",
+            "wrap": true
+          },
+          {
+            "type": "TextBlock",
+            "text": "Commit: 7ce8438b9a1eb677c8c699a4e0294f399b9ff970",
+            "wrap": true
+          },
+          {
+            "type": "TextBlock",
+            "text": "Triggered by: Sanchalvk",
+            "wrap": true
+          }
+        ]
+      }
+    }
+  ]
+}
+EOF
