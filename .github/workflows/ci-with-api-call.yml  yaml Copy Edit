@@ -1,0 +1,55 @@
+name: Angular CI with REST API Notification
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run unit tests
+        run: npm test -- --watch=false --browsers=ChromeHeadless
+
+      - name: Build Angular app
+        run: npm run build
+
+      - name: Notify success via REST API
+        if: success()
+        run: |
+          curl -X POST https://example.com/api/notify \
+            -H "Content-Type: application/json" \
+            -d '{
+              "status": "success",
+              "repo": "${{ github.repository }}",
+              "branch": "${{ github.ref_name }}",
+              "commit": "${{ github.sha }}",
+              "by": "${{ github.actor }}"
+            }'
+
+      - name: Notify failure via REST API
+        if: failure()
+        run: |
+          curl -X POST https://example.com/api/notify \
+            -H "Content-Type: application/json" \
+            -d '{
+              "status": "failed",
+              "repo": "${{ github.repository }}",
+              "branch": "${{ github.ref_name }}",
+              "commit": "${{ github.sha }}",
+              "by": "${{ github.actor }}"
+            }'
