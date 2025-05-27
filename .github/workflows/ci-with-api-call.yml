@@ -31,7 +31,7 @@ jobs:
       - name: Notify success via REST API
         if: success()
         run: |
-          curl -X POST https://example.com/api/notify \
+          curl -X POST https://webhook.site/12345678-aaaa-bbbb-cccc-1234567890ab \
             -H "Content-Type: application/json" \
             -d '{
               "status": "success",
@@ -44,7 +44,7 @@ jobs:
       - name: Notify failure via REST API
         if: failure()
         run: |
-          curl -X POST https://example.com/api/notify \
+          curl -X POST https://webhook.site/12345678-aaaa-bbbb-cccc-1234567890ab \
             -H "Content-Type: application/json" \
             -d '{
               "status": "failed",
