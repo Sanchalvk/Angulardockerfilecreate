@@ -28,28 +28,50 @@ jobs:
       - name: Build Angular app
         run: npm run build
 
-      - name: Notify success via REST API
+      - name: Notify success via Adaptive Card
         if: success()
         run: |
-          curl -X POST https://webhook.site/12345678-aaaa-bbbb-cccc-1234567890ab \
+          curl -X POST YOUR_TEAMS_WEBHOOK_URL_HERE \
             -H "Content-Type: application/json" \
             -d '{
-              "status": "success",
-              "repo": "${{ github.repository }}",
-              "branch": "${{ github.ref_name }}",
-              "commit": "${{ github.sha }}",
-              "by": "${{ github.actor }}"
-            }'
-
-      - name: Notify failure via REST API
-        if: failure()
-        run: |
-          curl -X POST https://webhook.site/12345678-aaaa-bbbb-cccc-1234567890ab \
-            -H "Content-Type: application/json" \
-            -d '{
-              "status": "failed",
-              "repo": "${{ github.repository }}",
-              "branch": "${{ github.ref_name }}",
-              "commit": "${{ github.sha }}",
-              "by": "${{ github.actor }}"
+              "type": "message",
+              "attachments": [
+                {
+                  "contentType": "application/vnd.microsoft.card.adaptive",
+                  "content": {
+                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                    "type": "AdaptiveCard",
+                    "version": "1.3",
+                    "body": [
+                      {
+                        "type": "TextBlock",
+                        "size": "Large",
+                        "weight": "Bolder",
+                        "color": "Good",
+                        "text": "✅ Build Succeeded!"
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Repository: '${{ github.repository }}'",
+                        "wrap": true
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Branch: '${{ github.ref_name }}'",
+                        "wrap": true
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Commit: '${{ github.sha }}'",
+                        "wrap": true
+                      },
+                      {
+                        "type": "TextBlock",
+                        "text": "Triggered by: '${{ github.actor }}'",
+                        "wrap": true
+                      }
+                    ]
+                  }
+                }
+              ]
             }'
