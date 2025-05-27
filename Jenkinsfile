@@ -2,13 +2,13 @@ pipeline {
   agent any
 
   environment {
-    SONARQUBE = 'SonarQubeServer' // SonarQube server configured in Jenkins
+    SONARQUBE = 'SonarQubeServer'
   }
 
   stages {
     stage('Checkout') {
       steps {
-        checkout scm
+        git branch: 'main', url: 'https://github.com/Sanchalvk/Angulardockerfilecreate.git'
       }
     }
 
@@ -41,16 +41,12 @@ pipeline {
       }
     }
 
-    stage('Build Docker Image') {
+    stage('Quality Gate') {
       steps {
-        sh 'docker build -t my-angular-app .'
+        timeout(time: 1, unit: 'HOURS') {
+          waitForQualityGate abortPipeline: true
+        }
       }
     }
 
-    stage('Run Docker Container') {
-      steps {
-        sh 'docker run -d -p 4200:80 my-angular-app'
-      }
-    }
-  }
-}
+    stage('Build Docker Image'
