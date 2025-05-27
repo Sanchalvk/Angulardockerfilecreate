@@ -31,7 +31,7 @@ jobs:
       - name: Notify success via Adaptive Card
         if: success()
         run: |
-          curl -X POST YOUR_TEAMS_WEBHOOK_URL_HERE \
+          curl -X POST https://webhook.site/12345678-aaaa-bbbb-cccc-1234567890ab \
             -H "Content-Type: application/json" \
             -d '{
               "type": "message",
@@ -74,4 +74,4 @@ jobs:
                   }
                 }
               ]
-            }'
+            }
