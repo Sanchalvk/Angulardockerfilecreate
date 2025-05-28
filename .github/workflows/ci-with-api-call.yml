@@ -75,3 +75,80 @@ jobs:
                 }
               ]
             }"
+
+      - name: Notify failure via Adaptive Card
+        if: failure()
+        run: |
+          curl -X POST https://jsonplaceholder.typicode.com/todos/1 \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"type\": \"message\",
+              \"attachments\": [
+                {
+                  \"contentType\": \"application/vnd.microsoft.card.adaptive\",
+                  \"content\": {
+                    \"\$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",
+                    \"type\": \"AdaptiveCard\",
+                    \"version\": \"1.6\",
+                    \"body\": [
+                      {
+                        \"type\": \"TextBlock\",
+                        \"text\": \"❌ GitHub Action Failed\",
+                        \"weight\": \"Bolder\",
+                        \"size\": \"Large\",
+                        \"color\": \"Attention\",
+                        \"wrap\": true
+                      },
+                      {
+                        \"type\": \"TextBlock\",
+                        \"text\": \"The **Build & Test Workflow** failed. Please review the logs below.\",
+                        \"wrap\": true
+                      },
+                      {
+                        \"type\": \"FactSet\",
+                        \"facts\": [
+                          {
+                            \"title\": \"Repository:\",
+                            \"value\": \"**sanchalkhedkar/angular**\"
+                          },
+                          {
+                            \"title\": \"Workflow:\",
+                            \"value\": \"main.yml\"
+                          },
+                          {
+                            \"title\": \"Branch:\",
+                            \"value\": \"main\"
+                          },
+                          {
+                            \"title\": \"Status:\",
+                            \"value\": \"Failure\"
+                          },
+                          {
+                            \"title\": \"Commit:\",
+                            \"value\": \"[7ce8438](https://github.com/octocat/support-bot/commit/7ce8438)\"
+                          },
+                          {
+                            \"title\": \"Time:\",
+                            \"value\": \"2025-05-27 15:25 UTC\"
+                          }
+                        ]
+                      }
+                    ],
+                    \"actions\": [
+                      {
+                        \"type\": \"Action.OpenUrl\",
+                        \"title\": \"📄 View Logs\",
+                        \"url\": \"https://github.com/octocat/support-bot/actions/runs/1234567890\",
+                        \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"
+                      },
+                      {
+                        \"type\": \"Action.OpenUrl\",
+                        \"title\": \"🔗 View Repository\",
+                        \"url\": \"https://github.com/octocat/support-bot\",
+                        \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }"
