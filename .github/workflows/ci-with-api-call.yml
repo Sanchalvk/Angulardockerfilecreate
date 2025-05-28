@@ -31,6 +31,12 @@ jobs:
       - name: Notify success via Adaptive Card
         if: success()
         run: |
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+          COMMIT="${{ github.sha }}"
+          ACTOR="${{ github.actor }}"
+          TIME="$(date -u +"%Y-%m-%d %H:%M UTC")"
+
           curl -X POST https://jsonplaceholder.typicode.com/todos/1 \
             -H "Content-Type: application/json" \
             -d "{
@@ -52,22 +58,27 @@ jobs:
                       },
                       {
                         \"type\": \"TextBlock\",
-                        \"text\": \"Repository: Sanchalvk/Angulardockerfilecreate\",
+                        \"text\": \"Repository: $REPO\",
                         \"wrap\": true
                       },
                       {
                         \"type\": \"TextBlock\",
-                        \"text\": \"Branch: main\",
+                        \"text\": \"Branch: $BRANCH\",
                         \"wrap\": true
                       },
                       {
                         \"type\": \"TextBlock\",
-                        \"text\": \"Commit: 7ce8438b9a1eb677c8c699a4e0294f399b9ff970\",
+                        \"text\": \"Commit: $COMMIT\",
                         \"wrap\": true
                       },
                       {
                         \"type\": \"TextBlock\",
-                        \"text\": \"Triggered by: Sanchalvk\",
+                        \"text\": \"Triggered by: $ACTOR\",
+                        \"wrap\": true
+                      },
+                      {
+                        \"type\": \"TextBlock\",
+                        \"text\": \"Time: $TIME\",
                         \"wrap\": true
                       }
                     ]
@@ -79,6 +90,12 @@ jobs:
       - name: Notify failure via Adaptive Card
         if: failure()
         run: |
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+          COMMIT="${{ github.sha }}"
+          ACTOR="${{ github.actor }}"
+          TIME="$(date -u +"%Y-%m-%d %H:%M UTC")"
+
           curl -X POST https://jsonplaceholder.typicode.com/todos/1 \
             -H "Content-Type: application/json" \
             -d "{
@@ -109,15 +126,11 @@ jobs:
                         \"facts\": [
                           {
                             \"title\": \"Repository:\",
-                            \"value\": \"**sanchalkhedkar/angular**\"
-                          },
-                          {
-                            \"title\": \"Workflow:\",
-                            \"value\": \"main.yml\"
+                            \"value\": \"$REPO\"
                           },
                           {
                             \"title\": \"Branch:\",
-                            \"value\": \"main\"
+                            \"value\": \"$BRANCH\"
                           },
                           {
                             \"title\": \"Status:\",
@@ -125,11 +138,15 @@ jobs:
                           },
                           {
                             \"title\": \"Commit:\",
-                            \"value\": \"[7ce8438](https://github.com/octocat/support-bot/commit/7ce8438)\"
+                            \"value\": \"$COMMIT\"
+                          },
+                          {
+                            \"title\": \"Actor:\",
+                            \"value\": \"$ACTOR\"
                           },
                           {
                             \"title\": \"Time:\",
-                            \"value\": \"2025-05-27 15:25 UTC\"
+                            \"value\": \"$TIME\"
                           }
                         ]
                       }
@@ -138,13 +155,13 @@ jobs:
                       {
                         \"type\": \"Action.OpenUrl\",
                         \"title\": \"📄 View Logs\",
-                        \"url\": \"https://github.com/octocat/support-bot/actions/runs/1234567890\",
+                        \"url\": \"https://github.com/$REPO/actions\",
                         \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"
                       },
                       {
                         \"type\": \"Action.OpenUrl\",
                         \"title\": \"🔗 View Repository\",
-                        \"url\": \"https://github.com/octocat/support-bot\",
+                        \"url\": \"https://github.com/$REPO\",
                         \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"
                       }
                     ]
