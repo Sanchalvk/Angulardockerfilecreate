@@ -40,77 +40,6 @@ jobs:
           LOGS_URL="https://github.com/${REPO}/actions"
           REPO_URL="https://github.com/${REPO}"
 
-          CARD_JSON=$(cat <<EOF
-{
-  "\$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-  "type": "AdaptiveCard",
-  "version": "1.4",
-  "body": [
-    {
-      "type": "TextBlock",
-      "text": "✅ Deployment Succeeded",
-      "weight": "Bolder",
-      "size": "Large",
-      "color": "Good",
-      "wrap": true
-    },
-    {
-      "type": "TextBlock",
-      "text": "The **Angular CI with REST API Notification** workflow completed successfully. Details are below.",
-      "wrap": true
-    },
-    {
-      "type": "FactSet",
-      "facts": [
-        {
-          "title": "App",
-          "value": "IoT Monitor"
-        },
-        {
-          "title": "Environment",
-          "value": "Production"
-        },
-        {
-          "title": "Branch",
-          "value": "${BRANCH}"
-        },
-        {
-          "title": "Deployed By",
-          "value": "${ACTOR}"
-        },
-        {
-          "title": "Commit",
-          "value": "[${COMMIT}](${COMMIT_URL})"
-        },
-        {
-          "title": "Time",
-          "value": "${TIME}"
-        },
-        {
-          "title": "Status",
-          "value": "Success"
-        }
-      ]
-    }
-  ],
-  "actions": [
-    {
-      "type": "Action.OpenUrl",
-      "title": "📄 View Logs",
-      "url": "${LOGS_URL}",
-      "iconUrl": "https://cdn-icons-png.flaticon.com/512/25/25231.png"
-    },
-    {
-      "type": "Action.OpenUrl",
-      "title": "🔗 View Repository",
-      "url": "${REPO_URL}",
-      "iconUrl": "https://cdn-icons-png.flaticon.com/512/25/25231.png"
-    }
-  ]
-}
-EOF
-)
-
           curl -X POST "https://prod-21.centralindia.logic.azure.com:443/workflows/33e17a68662d4dd19c91c0ffc4ed0b9c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=GPjG3lpjJiqNehjS_DXL9wumNle5dMD6y6WNCbLuhms" \
             -H "Content-Type: application/json" \
             -d "{
@@ -118,7 +47,73 @@ EOF
               \"attachments\": [
                 {
                   \"contentType\": \"application/vnd.microsoft.card.adaptive\",
-                  \"content\": $CARD_JSON
+                  \"content\": {
+                    \"\$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",
+                    \"type\": \"AdaptiveCard\",
+                    \"version\": \"1.4\",
+                    \"body\": [
+                      {
+                        \"type\": \"TextBlock\",
+                        \"text\": \"✅ Deployment Succeeded\",
+                        \"weight\": \"Bolder\",
+                        \"size\": \"Large\",
+                        \"color\": \"Good\",
+                        \"wrap\": true
+                      },
+                      {
+                        \"type\": \"TextBlock\",
+                        \"text\": \"The **Angular CI with REST API Notification** workflow completed successfully. Details are below.\",
+                        \"wrap\": true
+                      },
+                      {
+                        \"type\": \"FactSet\",
+                        \"facts\": [
+                          {
+                            \"title\": \"App\",
+                            \"value\": \"IoT Monitor\"
+                          },
+                          {
+                            \"title\": \"Environment\",
+                            \"value\": \"Production\"
+                          },
+                          {
+                            \"title\": \"Branch\",
+                            \"value\": \"${BRANCH}\"
+                          },
+                          {
+                            \"title\": \"Deployed By\",
+                            \"value\": \"${ACTOR}\"
+                          },
+                          {
+                            \"title\": \"Commit\",
+                            \"value\": \"[${COMMIT}](${COMMIT_URL})\"
+                          },
+                          {
+                            \"title\": \"Time\",
+                            \"value\": \"${TIME}\"
+                          },
+                          {
+                            \"title\": \"Status\",
+                            \"value\": \"Success\"
+                          }
+                        ]
+                      }
+                    ],
+                    \"actions\": [
+                      {
+                        \"type\": \"Action.OpenUrl\",
+                        \"title\": \"📄 View Logs\",
+                        \"url\": \"${LOGS_URL}\",
+                        \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"
+                      },
+                      {
+                        \"type\": \"Action.OpenUrl\",
+                        \"title\": \"🔗 View Repository\",
+                        \"url\": \"${REPO_URL}\",
+                        \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"
+                      }
+                    ]
+                  }
                 }
               ]
             }"
