@@ -81,7 +81,7 @@ jobs:
                     },
                     {
                       \"type\": \"TextBlock\",
-                      \"text\": \"The **Angular CI with REST API Notification** workflow completed. Details are below.\",
+                      \"text\": \"The *${WORKFLOW_TITLE}** workflow completed. Details are below.\",
                       \"wrap\": true
                     },
                     {
