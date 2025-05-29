@@ -13,7 +13,7 @@ import { RouteParamsComponent } from './examples/route-params/route-params.compo
 import { AuthGuard } from './shared/guards/auth.guard';
 import { ProtectedComponent } from './examples/protected/protected.component';
 
-const routes: Routes = [
+const routes: Routes = 
   { path: 'home', component: HomeComponent },
   { path: 'courses', component: CoursesComponent },
   { path: 'login', component: LoginComponent },
@@ -48,7 +48,7 @@ const routes: Routes = [
     ],
   },
   { path: '**', redirectTo: '/home' },
-];
+;
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
