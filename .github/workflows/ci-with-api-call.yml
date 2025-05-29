@@ -48,6 +48,7 @@ jobs:
           COMMIT_URL="https://github.com/${REPO}/commit/${COMMIT}"
           LOGS_URL="https://github.com/${REPO}/actions"
           REPO_URL="https://github.com/${REPO}"
+          WORKFLOW_NAME="${{ github.workflow }}"
 
           if [ "${{ needs.build.result }}" = "success" ]; then
             STATUS_TEXT="✅ Deployment Succeeded"
