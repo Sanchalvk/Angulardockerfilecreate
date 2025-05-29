@@ -36,136 +36,38 @@ jobs:
           COMMIT="${{ github.sha }}"
           ACTOR="${{ github.actor }}"
           TIME="$(date -u +"%Y-%m-%d %H:%M UTC")"
-
-          curl -X POST https://jsonplaceholder.typicode.com/todos/1 \
+      
+          curl -X POST : https://prod-21.centralindia.logic.azure.com:443/workflows/33e17a68662d4dd19c91c0ffc4ed0b9c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=GPjG3lpjJiqNehjS_DXL9wumNle5dMD6y6WNCbLuhms/notify \
             -H "Content-Type: application/json" \
-            -d "{
-              \"type\": \"message\",
-              \"attachments\": [
+            -d '{
+              "type": "message",
+              "attachments": [
                 {
-                  \"contentType\": \"application/vnd.microsoft.card.adaptive\",
-                  \"content\": {
-                    \"\$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",
-                    \"type\": \"AdaptiveCard\",
-                    \"version\": \"1.3\",
-                    \"body\": [
+                  "contentType": "application/vnd.microsoft.card.adaptive",
+                  "content": {
+                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                    "type": "AdaptiveCard",
+                    "version": "1.4",
+                    "body": [
                       {
-                        \"type\": \"TextBlock\",
-                        \"size\": \"Large\",
-                        \"weight\": \"Bolder\",
-                        \"color\": \"Good\",
-                        \"text\": \"✅ Build Succeeded!\"
+                        "type": "TextBlock",
+                        "text": "🚀 Deployment Succeeded",
+                        "weight": "Bolder",
+                        "size": "Large",
+                        "color": "Good"
                       },
                       {
-                        \"type\": \"TextBlock\",
-                        \"text\": \"Repository: $REPO\",
-                        \"wrap\": true
+                        "type": "TextBlock",
+                        "text": "**App:** IoT Monitor\\n**Environment:** Production\\n**Deployed by:** '"$ACTOR"'",
+                        "wrap": true
                       },
                       {
-                        \"type\": \"TextBlock\",
-                        \"text\": \"Branch: $BRANCH\",
-                        \"wrap\": true
-                      },
-                      {
-                        \"type\": \"TextBlock\",
-                        \"text\": \"Commit: $COMMIT\",
-                        \"wrap\": true
-                      },
-                      {
-                        \"type\": \"TextBlock\",
-                        \"text\": \"Triggered by: $ACTOR\",
-                        \"wrap\": true
-                      },
-                      {
-                        \"type\": \"TextBlock\",
-                        \"text\": \"Time: $TIME\",
-                        \"wrap\": true
+                        "type": "TextBlock",
+                        "text": "[View deployment logs](https://github.com/'"$REPO"'/actions)",
+                        "wrap": true
                       }
                     ]
                   }
                 }
               ]
-            }"
-
-      - name: Notify failure via Adaptive Card
-        if: failure()
-        run: |
-          REPO="${{ github.repository }}"
-          BRANCH="${{ github.ref_name }}"
-          COMMIT="${{ github.sha }}"
-          ACTOR="${{ github.actor }}"
-          TIME="$(date -u +"%Y-%m-%d %H:%M UTC")"
-
-          curl -X POST https://jsonplaceholder.typicode.com/todos/1 \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"type\": \"message\",
-              \"attachments\": [
-                {
-                  \"contentType\": \"application/vnd.microsoft.card.adaptive\",
-                  \"content\": {
-                    \"\$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",
-                    \"type\": \"AdaptiveCard\",
-                    \"version\": \"1.6\",
-                    \"body\": [
-                      {
-                        \"type\": \"TextBlock\",
-                        \"text\": \"❌ GitHub Action Failed\",
-                        \"weight\": \"Bolder\",
-                        \"size\": \"Large\",
-                        \"color\": \"Attention\",
-                        \"wrap\": true
-                      },
-                      {
-                        \"type\": \"TextBlock\",
-                        \"text\": \"The **Build & Test Workflow** failed. Please review the logs below.\",
-                        \"wrap\": true
-                      },
-                      {
-                        \"type\": \"FactSet\",
-                        \"facts\": [
-                          {
-                            \"title\": \"Repository:\",
-                            \"value\": \"$REPO\"
-                          },
-                          {
-                            \"title\": \"Branch:\",
-                            \"value\": \"$BRANCH\"
-                          },
-                          {
-                            \"title\": \"Status:\",
-                            \"value\": \"Failure\"
-                          },
-                          {
-                            \"title\": \"Commit:\",
-                            \"value\": \"$COMMIT\"
-                          },
-                          {
-                            \"title\": \"Actor:\",
-                            \"value\": \"$ACTOR\"
-                          },
-                          {
-                            \"title\": \"Time:\",
-                            \"value\": \"$TIME\"
-                          }
-                        ]
-                      }
-                    ],
-                    \"actions\": [
-                      {
-                        \"type\": \"Action.OpenUrl\",
-                        \"title\": \"📄 View Logs\",
-                        \"url\": \"https://github.com/$REPO/actions\",
-                        \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"
-                      },
-                      {
-                        \"type\": \"Action.OpenUrl\",
-                        \"title\": \"🔗 View Repository\",
-                        \"url\": \"https://github.com/$REPO\",
-                        \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"
-                      }
-                    ]
-                  }
-                }
-              ]
-            }"
+            }'
