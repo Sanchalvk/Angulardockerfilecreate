@@ -83,7 +83,7 @@ jobs:
             }]
           }"
 
-      - name: Send Build Notification
+      - name: Send Adaptive Card
         if: github.event_name == 'push'
         run: |
           REPO="${{ github.repository }}"
@@ -96,7 +96,9 @@ jobs:
           REPO_URL="https://github.com/${REPO}"
           WORKFLOW_NAME="${{ github.workflow }}"
 
-          if [ "${{ needs.build.outputs.result }}" = "success" ]; then
+          BUILD_RESULT="${{ needs.build.outputs.result }}"
+
+          if [ "$BUILD_RESULT" = "success" ]; then
             STATUS_TEXT="✅ Deployment Succeeded"
             STATUS_COLOR="Good"
             STATUS="Success"
@@ -106,33 +108,58 @@ jobs:
             STATUS="Failure"
           fi
 
-          curl -X POST "https://prod-21.centralindia.logic.azure.com:443/workflows/33e17a68662d4dd19c91c0ffc4ed0b9c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=GPjG3lpjJiqNehjS_DXL9wumNle5dMD6y6WNCbLuhms" \
+          curl -X POST "${{ secrets.ALERT_URL }}" \
           -H "Content-Type: application/json" \
           -d "{
             \"type\": \"message\",
-            \"attachments\": [{
-              \"contentType\": \"application/vnd.microsoft.card.adaptive\",
-              \"content\": {
-                \"\$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",
-                \"type\": \"AdaptiveCard\",
-                \"version\": \"1.4\",
-                \"body\": [
-                  {\"type\": \"TextBlock\", \"text\": \"${STATUS_TEXT}\", \"weight\": \"Bolder\", \"size\": \"Large\", \"color\": \"${STATUS_COLOR}\", \"wrap\": true},
-                  {\"type\": \"TextBlock\", \"text\": \"The *${WORKFLOW_NAME}* workflow completed. Details are below.\", \"wrap\": true},
-                  {\"type\": \"FactSet\", \"facts\": [
-                    {\"title\": \"App\", \"value\": \"IoT Monitor\"},
-                    {\"title\": \"Environment\", \"value\": \"Production\"},
-                    {\"title\": \"Branch\", \"value\": \"${BRANCH}\"},
-                    {\"title\": \"Deployed By\", \"value\": \"${ACTOR}\"},
-                    {\"title\": \"Commit\", \"value\": \"[${COMMIT}](${COMMIT_URL})\"},
-                    {\"title\": \"Time\", \"value\": \"${TIME}\"},
-                    {\"title\": \"Status\", \"value\": \"${STATUS}\"}
-                  ]}
-                ],
-                \"actions\": [
-                  {\"type\": \"Action.OpenUrl\", \"title\": \"📄 View Logs\", \"url\": \"${LOGS_URL}\", \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"},
-                  {\"type\": \"Action.OpenUrl\", \"title\": \"🔗 View Repository\", \"url\": \"${REPO_URL}\", \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"}
-                ]
+            \"attachments\": [
+              {
+                \"contentType\": \"application/vnd.microsoft.card.adaptive\",
+                \"content\": {
+                  \"\$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",
+                  \"type\": \"AdaptiveCard\",
+                  \"version\": \"1.4\",
+                  \"body\": [
+                    {
+                      \"type\": \"TextBlock\",
+                      \"text\": \"${STATUS_TEXT}\",
+                      \"weight\": \"Bolder\",
+                      \"size\": \"Large\",
+                      \"color\": \"${STATUS_COLOR}\",
+                      \"wrap\": true
+                    },
+                    {
+                      \"type\": \"TextBlock\",
+                      \"text\": \"The **${WORKFLOW_NAME}** workflow completed. Details are below.\",
+                      \"wrap\": true
+                    },
+                    {
+                      \"type\": \"FactSet\",
+                      \"facts\": [
+                        { \"title\": \"Environment\", \"value\": \"Production\" },
+                        { \"title\": \"Branch\", \"value\": \"${BRANCH}\" },
+                        { \"title\": \"Deployed By\", \"value\": \"${ACTOR}\" },
+                        { \"title\": \"Commit\", \"value\": \"[${COMMIT}](${COMMIT_URL})\" },
+                        { \"title\": \"Time\", \"value\": \"${TIME}\" },
+                        { \"title\": \"Status\", \"value\": \"${STATUS}\" }
+                      ]
+                    }
+                  ],
+                  \"actions\": [
+                    {
+                      \"type\": \"Action.OpenUrl\",
+                      \"title\": \"📄 View Logs\",
+                      \"url\": \"${LOGS_URL}\",
+                      \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"
+                    },
+                    {
+                      \"type\": \"Action.OpenUrl\",
+                      \"title\": \"🔗 View Repository\",
+                      \"url\": \"${REPO_URL}\",
+                      \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"
+                    }
+                  ]
+                }
               }
-            }]
+            ]
           }"
