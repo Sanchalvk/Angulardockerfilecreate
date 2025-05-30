@@ -9,12 +9,13 @@ on:
 
 jobs:
   build:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'  # ✅ Only run build for push
     outputs:
-      build_result: ${{ steps.set_result.outcome }}
+      result: ${{ steps.set-result.outcome }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -24,112 +25,113 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run tests
+      - name: Run unit tests
         run: npm test -- --watch=false --browsers=ChromeHeadless
 
       - name: Build Angular app
         run: npm run build
 
       - name: Set build result
-        id: set_result
-        run: echo "::set-output name=outcome::success"
-        # Replace with logic to set failure if needed
+        id: set-result
+        run: echo "Setting result..."
+        # Add actual logic to detect build success if needed
 
   notify:
     runs-on: ubuntu-latest
+    if: always()  # ✅ Always run this job
     needs: [build]
     steps:
-      - name: Send PR or Build Adaptive Card
+      - name: Send PR Opened Notification
+        if: github.event_name == 'pull_request' && github.event.action == 'opened'
         run: |
-          WEBHOOK_URL="https://prod-21.centralindia.logic.azure.com:443/workflows/33e17a68662d4dd19c91c0ffc4ed0b9c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=GPjG3lpjJiqNehjS_DXL9wumNle5dMD6y6WNCbLuhms"
-          TIME=$(date -u +"%Y-%m-%d %H:%M UTC")
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.head_ref }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          AUTHOR="${{ github.actor }}"
+          TIME="$(date -u +"%Y-%m-%d %H:%M UTC")"
 
-          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" && "${GITHUB_EVENT_ACTION}" == "opened" ]]; then
-            # PR opened notification
-            PR_TITLE="${{ github.event.pull_request.title }}"
-            PR_NUMBER="${{ github.event.pull_request.number }}"
-            PR_URL="${{ github.event.pull_request.html_url }}"
-            BRANCH="${{ github.head_ref }}"
-            AUTHOR="${{ github.actor }}"
+          curl -X POST "https://prod-21.centralindia.logic.azure.com:443/workflows/33e17a68662d4dd19c91c0ffc4ed0b9c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=GPjG3lpjJiqNehjS_DXL9wumNle5dMD6y6WNCbLuhms" \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"type\": \"message\",
+            \"attachments\": [{
+              \"contentType\": \"application/vnd.microsoft.card.adaptive\",
+              \"content\": {
+                \"\$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",
+                \"type\": \"AdaptiveCard\",
+                \"version\": \"1.4\",
+                \"body\": [
+                  {\"type\": \"TextBlock\", \"text\": \"🚀 New Pull Request Opened\", \"weight\": \"Bolder\", \"size\": \"Large\", \"wrap\": true},
+                  {\"type\": \"TextBlock\", \"text\": \"*${AUTHOR}* has opened a new pull request: **${PR_TITLE}**\", \"wrap\": true},
+                  {\"type\": \"FactSet\", \"facts\": [
+                    {\"title\": \"Branch\", \"value\": \"${BRANCH}\"},
+                    {\"title\": \"Author\", \"value\": \"${AUTHOR}\"},
+                    {\"title\": \"Time\", \"value\": \"${TIME}\"},
+                    {\"title\": \"PR #\", \"value\": \"${PR_NUMBER}\"}
+                  ]}
+                ],
+                \"actions\": [{
+                  \"type\": \"Action.OpenUrl\",
+                  \"title\": \"🔍 View Pull Request\",
+                  \"url\": \"${PR_URL}\",
+                  \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"
+                }]
+              }
+            }]
+          }"
 
-            curl -X POST "$WEBHOOK_URL" -H "Content-Type: application/json" -d "{
-              \"type\": \"message\",
-              \"attachments\": [
-                {
-                  \"contentType\": \"application/vnd.microsoft.card.adaptive\",
-                  \"content\": {
-                    \"\$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",
-                    \"type\": \"AdaptiveCard\",
-                    \"version\": \"1.4\",
-                    \"body\": [
-                      {\"type\": \"TextBlock\", \"text\": \"🚀 New Pull Request Opened\", \"weight\": \"Bolder\", \"size\": \"Large\", \"wrap\": true},
-                      {\"type\": \"TextBlock\", \"text\": \"*${AUTHOR}* has opened a new pull request: **${PR_TITLE}**\", \"wrap\": true},
-                      {\"type\": \"FactSet\", \"facts\": [
-                          {\"title\": \"Branch\", \"value\": \"${BRANCH}\"},
-                          {\"title\": \"Author\", \"value\": \"${AUTHOR}\"},
-                          {\"title\": \"Time\", \"value\": \"${TIME}\"},
-                          {\"title\": \"PR #\", \"value\": \"${PR_NUMBER}\"}
-                      ]}
-                    ],
-                    \"actions\": [
-                      {\"type\": \"Action.OpenUrl\", \"title\": \"🔍 View Pull Request\", \"url\": \"${PR_URL}\", \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"}
-                    ]
-                  }
-                }
-              ]
-            }"
-
-          elif [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
-            # Build notification
-            REPO="${GITHUB_REPOSITORY}"
-            BRANCH="${GITHUB_REF_NAME}"
-            COMMIT="${GITHUB_SHA}"
-            ACTOR="${GITHUB_ACTOR}"
-            COMMIT_URL="https://github.com/${REPO}/commit/${COMMIT}"
-            LOGS_URL="https://github.com/${REPO}/actions"
-            REPO_URL="https://github.com/${REPO}"
-            WORKFLOW_NAME="${GITHUB_WORKFLOW}"
-            BUILD_RESULT="${{ needs.build.outputs.build_result }}"
-
-            if [[ "$BUILD_RESULT" == "success" ]]; then
-              STATUS_TEXT="✅ Deployment Succeeded"
-              STATUS_COLOR="Good"
-              STATUS="Success"
-            else
-              STATUS_TEXT="❌ Deployment Failed"
-              STATUS_COLOR="Attention"
-              STATUS="Failure"
-            fi
-
-            curl -X POST "$WEBHOOK_URL" -H "Content-Type: application/json" -d "{
-              \"type\": \"message\",
-              \"attachments\": [
-                {
-                  \"contentType\": \"application/vnd.microsoft.card.adaptive\",
-                  \"content\": {
-                    \"\$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",
-                    \"type\": \"AdaptiveCard\",
-                    \"version\": \"1.4\",
-                    \"body\": [
-                      {\"type\": \"TextBlock\", \"text\": \"${STATUS_TEXT}\", \"weight\": \"Bolder\", \"size\": \"Large\", \"color\": \"${STATUS_COLOR}\", \"wrap\": true},
-                      {\"type\": \"TextBlock\", \"text\": \"The *${WORKFLOW_NAME}* workflow completed. Details are below.\", \"wrap\": true},
-                      {\"type\": \"FactSet\", \"facts\": [
-                          {\"title\": \"App\", \"value\": \"IoT Monitor\"},
-                          {\"title\": \"Environment\", \"value\": \"Production\"},
-                          {\"title\": \"Branch\", \"value\": \"${BRANCH}\"},
-                          {\"title\": \"Deployed By\", \"value\": \"${ACTOR}\"},
-                          {\"title\": \"Commit\", \"value\": \"[${COMMIT}](${COMMIT_URL})\"},
-                          {\"title\": \"Time\", \"value\": \"${TIME}\"},
-                          {\"title\": \"Status\", \"value\": \"${STATUS}\"}
-                      ]}
-                    ],
-                    \"actions\": [
-                      {\"type\": \"Action.OpenUrl\", \"title\": \"📄 View Logs\", \"url\": \"${LOGS_URL}\", \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"},
-                      {\"type\": \"Action.OpenUrl\", \"title\": \"🔗 View Repository\", \"url\": \"${REPO_URL}\", \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"}
-                    ]
-                  }
-                }
-              ]
-            }"
-
+      - name: Send Build Notification
+        if: github.event_name == 'push'
+        run: |
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+          COMMIT="${{ github.sha }}"
+          ACTOR="${{ github.actor }}"
+          TIME="$(date -u +"%Y-%m-%d %H:%M UTC")"
+          COMMIT_URL="https://github.com/${REPO}/commit/${COMMIT}"
+          LOGS_URL="https://github.com/${REPO}/actions"
+          REPO_URL="https://github.com/${REPO}"
+          WORKFLOW_NAME="${{ github.workflow }}"
+          
+          if [ "${{ needs.build.result }}" = "success" ]; then
+            STATUS_TEXT="✅ Deployment Succeeded"
+            STATUS_COLOR="Good"
+            STATUS="Success"
+          else
+            STATUS_TEXT="❌ Deployment Failed"
+            STATUS_COLOR="Attention"
+            STATUS="Failure"
           fi
+
+          curl -X POST "https://prod-21.centralindia.logic.azure.com:443/workflows/33e17a68662d4dd19c91c0ffc4ed0b9c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=GPjG3lpjJiqNehjS_DXL9wumNle5dMD6y6WNCbLuhms" \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"type\": \"message\",
+            \"attachments\": [{
+              \"contentType\": \"application/vnd.microsoft.card.adaptive\",
+              \"content\": {
+                \"\$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",
+                \"type\": \"AdaptiveCard\",
+                \"version\": \"1.4\",
+                \"body\": [
+                  {\"type\": \"TextBlock\", \"text\": \"${STATUS_TEXT}\", \"weight\": \"Bolder\", \"size\": \"Large\", \"color\": \"${STATUS_COLOR}\", \"wrap\": true},
+                  {\"type\": \"TextBlock\", \"text\": \"The *${WORKFLOW_NAME}* workflow completed. Details are below.\", \"wrap\": true},
+                  {\"type\": \"FactSet\", \"facts\": [
+                    {\"title\": \"App\", \"value\": \"IoT Monitor\"},
+                    {\"title\": \"Environment\", \"value\": \"Production\"},
+                    {\"title\": \"Branch\", \"value\": \"${BRANCH}\"},
+                    {\"title\": \"Deployed By\", \"value\": \"${ACTOR}\"},
+                    {\"title\": \"Commit\", \"value\": \"[${COMMIT}](${COMMIT_URL})\"},
+                    {\"title\": \"Time\", \"value\": \"${TIME}\"},
+                    {\"title\": \"Status\", \"value\": \"${STATUS}\"}
+                  ]}
+                ],
+                \"actions\": [
+                  {\"type\": \"Action.OpenUrl\", \"title\": \"📄 View Logs\", \"url\": \"${LOGS_URL}\", \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"},
+                  {\"type\": \"Action.OpenUrl\", \"title\": \"🔗 View Repository\", \"url\": \"${REPO_URL}\", \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"}
+                ]
+              }
+            }]
+          }"
