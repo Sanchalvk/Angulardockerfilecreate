@@ -10,9 +10,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'  # ✅ Only run build for push
+    if: github.event_name == 'push'
     outputs:
-      result: ${{ steps.set-result.outcome }}
+      result: ${{ steps.set-result.outputs.result }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -33,31 +33,30 @@ jobs:
 
       - name: Set build result
         id: set-result
-        run: echo "Setting result..."
-        # Add actual logic to detect build success if needed
+        run: echo "result=success" >> $GITHUB_OUTPUT
 
   notify:
     runs-on: ubuntu-latest
-    if: always()  # ✅ Always run this job
+    if: always()
     needs: [build]
     steps:
       - name: Send PR Opened Notification
         if: github.event_name == 'pull_request' && github.event.action == 'opened'
         run: |
-              REPO="${{ github.repository }}"
-              SOURCE_BRANCH="${{ github.head_ref }}" 
-              TARGET_BRANCH="${{ github.base_ref }}" 
-              PR_TITLE="${{ github.event.pull_request.title }}"
-              PR_NUMBER="${{ github.event.pull_request.number }}"
-              PR_URL="${{ github.event.pull_request.html_url }}"
-              AUTHOR="${{ github.actor }}"
-              TIME="$(date -u +"%Y-%m-%d %H:%M UTC")"
-          
-              curl -X POST "https://prod-21.centralindia.logic.azure.com:443/workflows/33e17a68662d4dd19c91c0ffc4ed0b9c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=GPjG3lpjJiqNehjS_DXL9wumNle5dMD6y6WNCbLuhms" \
-              -H "Content-Type: application/json" \
-              -d "{
-                \"type\": \"message\",
-                  \"attachments\": [{
+          REPO="${{ github.repository }}"
+          SOURCE_BRANCH="${{ github.head_ref }}"
+          TARGET_BRANCH="${{ github.base_ref }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          AUTHOR="${{ github.actor }}"
+          TIME="$(date -u +"%Y-%m-%d %H:%M UTC")"
+
+          curl -X POST "https://prod-21.centralindia.logic.azure.com:443/workflows/33e17a68662d4dd19c91c0ffc4ed0b9c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=GPjG3lpjJiqNehjS_DXL9wumNle5dMD6y6WNCbLuhms" \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"type\": \"message\",
+            \"attachments\": [{
               \"contentType\": \"application/vnd.microsoft.card.adaptive\",
               \"content\": {
                 \"\$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\",
@@ -79,10 +78,10 @@ jobs:
                   \"title\": \"🔍 View Pull Request\",
                   \"url\": \"${PR_URL}\",
                   \"iconUrl\": \"https://cdn-icons-png.flaticon.com/512/25/25231.png\"
+                }]
+              }
             }]
-          }
-        }]
-      }"
+          }"
 
       - name: Send Build Notification
         if: github.event_name == 'push'
@@ -96,8 +95,8 @@ jobs:
           LOGS_URL="https://github.com/${REPO}/actions"
           REPO_URL="https://github.com/${REPO}"
           WORKFLOW_NAME="${{ github.workflow }}"
-          
-          if [ "${{ needs.build.result }}" = "success" ]; then
+
+          if [ "${{ needs.build.outputs.result }}" = "success" ]; then
             STATUS_TEXT="✅ Deployment Succeeded"
             STATUS_COLOR="Good"
             STATUS="Success"
