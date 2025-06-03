@@ -52,7 +52,7 @@ jobs:
           AUTHOR="${{ github.actor }}"
           TIME="$(date -u +"%Y-%m-%d %H:%M UTC")"
 
-          curl -X POST "https://prod-21.centralindia.logic.azure.com:443/workflows/33e17a68662d4dd19c91c0ffc4ed0b9c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=GPjG3lpjJiqNehjS_DXL9wumNle5dMD6y6WNCbLuhms" \
+          curl -X POST "ADD URL HERE" \
           -H "Content-Type: application/json" \
           -d "{
             \"type\": \"message\",
