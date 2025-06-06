@@ -1,11 +1,16 @@
-# Stage 1: Build
-FROM node:18-alpine as build
+# Stage 1: Build Angular App
+FROM node:18-alpine AS builder
+
 WORKDIR /app
+COPY package*.json ./
+RUN npm install
 COPY . .
-RUN npm install && npm run build
+RUN npm install -g @angular/cli && \
+    ng build --configuration production
 
 # Stage 2: Serve with Nginx
 FROM nginx:alpine
-COPY --from=build /app/dist/your-angular-app-name /usr/share/nginx/html
+COPY --from=builder /app/dist/angular13-fundamentals-workshop /usr/share/nginx/html
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
