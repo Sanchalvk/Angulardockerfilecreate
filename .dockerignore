@@ -1,0 +1,30 @@
+# Node modules (will be reinstalled during build)
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Git
+.git
+.gitignore
+
+# Build output
+dist
+coverage
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Environment files (optional — be cautious)
+.env
+.env.local
+
+# IDEs
+.vscode
+.idea
+*.sw?
+
+# Docker files
+Dockerfile
+.dockerignore
