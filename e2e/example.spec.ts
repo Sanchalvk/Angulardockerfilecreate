@@ -1,34 +1,26 @@
 import { test, expect, Page } from '@playwright/test';
 
-// Helper function to navigate and check the page title
-async function checkHomepageTitle(page: Page, expectedTitle: RegExp) {
-  await page.goto('http://localhost:4200');
-  await expect(page).toHaveTitle(expectedTitle);
-}
-
-// Helper function to check if an element is visible by selector
 async function expectElementVisible(page: Page, selector: string) {
+  await page.waitForSelector(selector, { state: 'visible', timeout: 10000 });
   const element = page.locator(selector);
   await expect(element).toBeVisible();
 }
 
-// Your main test suite
 test.describe('Angular Homepage Tests', () => {
-  test('homepage loads and has correct title', async ({ page }) => {
-    await checkHomepageTitle(page, /Angular/);
+  test('should load homepage and show title', async ({ page }) => {
+    await page.goto('http://localhost:4200');
+    await expect(page).toHaveTitle(/Angular|Login/i); // Adjust based on actual <title>
   });
 
-  test('should display the main header', async ({ page }) => {
+  test('should display the Login button', async ({ page }) => {
     await page.goto('http://localhost:4200');
-    // Adjust selector to your actual header or element you want to test
-    await expectElementVisible(page, 'h1');
+    await expectElementVisible(page, 'button:has-text("Login")'); // Update if it's a link or custom element
   });
 
-  test('navigation menu item works', async ({ page }) => {
+  test('should navigate to Courses page', async ({ page }) => {
     await page.goto('http://localhost:4200');
-    // Example: Click a nav link and check URL or element on new page
-    await page.click('nav >> text=About'); // Adjust selector and text accordingly
-    await expect(page).toHaveURL(/about/);
-    await expectElementVisible(page, 'h2:has-text("About")'); // Check About page heading
+    await page.click('a:has-text("Courses")'); // If it's a link, adjust to actual text
+    await expect(page).toHaveURL(/courses/); // Update if the route is different
+    await expectElementVisible(page, 'h2:has-text("Courses")'); // or whatever heading you use
   });
 });
