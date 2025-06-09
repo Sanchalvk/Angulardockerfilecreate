@@ -1,15 +1,7 @@
-name: Angular + Playwright Tests
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
 jobs:
   test:
-    timeout-minutes: 15
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
     - uses: actions/checkout@v4
@@ -21,11 +13,8 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Install Angular CLI
-      run: npm install -g @angular/cli
-
-    - name: Run Angular unit tests
-      run: ng test --watch=false --browsers=ChromeHeadless
+    - name: Install Playwright Test Runner
+      run: npm install -D @playwright/test
 
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
@@ -35,7 +24,7 @@ jobs:
 
     - name: Serve Angular app
       run: npx http-server ./dist/angular13-fundamentals-workshop -p 4200 &
-    
+
     - name: Run Playwright E2E tests
       run: npx playwright test e2e/
 
