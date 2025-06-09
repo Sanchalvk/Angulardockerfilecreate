@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    timeout-minutes: 60
+    timeout-minutes: 15
     runs-on: ubuntu-latest
 
     steps:
@@ -30,8 +30,14 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
+    - name: Build Angular app
+      run: npm run build
+
+    - name: Serve Angular app
+      run: npx http-server ./dist/angular13-fundamentals-workshop -p 4200 &
+    
     - name: Run Playwright E2E tests
-      run: npx playwright test e2e/
+      run: npx playwright test
 
     - uses: actions/upload-artifact@v4
       if: always()
