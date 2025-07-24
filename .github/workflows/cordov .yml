@@ -1,71 +1,109 @@
-name: Manual Cordova Android Build
+name: Cordova Android CI/CD
 
 on:
   push:
     branches:
       - main
-    paths:
-      - 'timp/dist/**'
-      - '.github/workflows/**'
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build_android:
+    runs-on: ubuntu-latest # Ubuntu is sufficient for Android builds
 
     steps:
-    - name: ✅ Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: ✅ Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' # Use a Node.js version compatible with your Cordova project
+          cache: 'npm' # Cache npm dependencies for faster builds
 
-    - name: ✅ Install Cordova CLI
-      run: npm install -g cordova
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17' # Use JDK 17, compatible with recent Android Gradle Plugin versions
+          distribution: 'temurin' # A common and reliable JDK distribution
+          cache: 'gradle' # Cache Gradle dependencies for faster Android builds
 
-    - name: ✅ Install Dependencies
-      run: npm ci
+      - name: Install Cordova CLI and dependencies
+        run: |
+          npm install -g cordova@latest # Install latest Cordova CLI globally
+          npm install # Install project-specific npm dependencies
 
-    - name: ✅ Set up Java JDK
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+      - name: Add Android platform
+        run: cordova platform add android@latest --save
 
-    - name: ✅ Set up Gradle
-      uses: gradle/gradle-build-action@v3
+      - name: Build Android Debug APK
+        run: cordova build android --debug
 
-    - name: ✅ Set up Android SDK
-      uses: android-actions/setup-android@v3
+      - name: Upload Android Debug APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
 
-    - name: 📦 Create Cordova Project
-      run: |
-        cordova create timp com.thinkrms.timp TIMP
-        cd timp
-        cordova platform add android@13.0.0
+      - name: Decode Android Keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          # Create a temporary directory for the keystore
+          mkdir -p ~/.android
+          echo "${{ env.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > ~/.android/release.keystore
+          echo "Keystore decoded successfully to ~/.android/release.keystore"
 
-    - name: 📁 Copy Angular Build to Cordova WWW
-      run: |
-        rm -rf timp/www/*
-        cp -a timp/dist/. timp/www/
+      - name: Build Android Release (unsigned)
+        run: cordova build android --release --prod
 
-    - name: 🔌 Inject cordova.js into index.html
-      run: |
-        sed -i '/<\/body>/i <script src="cordova.js"></script>' timp/www/index.html
+      - name: Sign Android APK
+        env:
+          ANDROID_KEYSTORE_PATH: ~/.android/release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEYSTORE_ALIAS }}
+          ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD }}
+        run: |
+          # Define paths for unsigned and signed APK
+          UNSIGNED_APK="platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk"
+          SIGNED_APK="platforms/android/app/build/outputs/apk/release/app-release-signed.apk"
 
-    - name: ⚙️ Prepare Cordova Android Platform
-      run: |
-        cd timp
-        cordova prepare android
+          # Verify if unsigned APK exists
+          if [ ! -f "$UNSIGNED_APK" ]; then
+            echo "Unsigned APK not found at $UNSIGNED_APK. Exiting."
+            exit 1
+          fi
 
-    - name: 🏗️ Build Cordova Android APK
-      run: |
-        cd timp
-        cordova build android
+          # Sign the APK using jarsigner
+          jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 \
+            -keystore "$ANDROID_KEYSTORE_PATH" \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" \
+            -keypass "$ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD" \
+            "$UNSIGNED_APK" "$ANDROID_KEYSTORE_ALIAS"
 
-    - name: 📤 Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: android-apk
-        path: timp/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          echo "APK signed successfully."
+
+          # Zipalign the signed APK
+          # Find the Android SDK build-tools path dynamically
+          ANDROID_SDK_ROOT=$ANDROID_HOME # Or typically /usr/local/lib/android/sdk on GitHub Actions
+          BUILD_TOOLS_DIR=$(find $ANDROID_SDK_ROOT/build-tools -maxdepth 1 -type d -name "*-rc*" -o -name "*" | sort -V | tail -n 1) # Find the latest build-tools version
+          ZIPALIGN_TOOL="$BUILD_TOOLS_DIR/zipalign"
+
+          if [ ! -f "$ZIPALIGN_TOOL" ]; then
+            echo "zipalign tool not found at $ZIPALIGN_TOOL. Please check Android SDK setup."
+            exit 1
+          fi
+
+          "$ZIPALIGN_TOOL" -v 4 "$UNSIGNED_APK" "$SIGNED_APK"
+
+          echo "APK zipaligned successfully."
+
+      - name: Upload Android Release (Signed) APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-signed-apk
+          path: platforms/android/app/build/outputs/apk/release/app-release-signed.apk
