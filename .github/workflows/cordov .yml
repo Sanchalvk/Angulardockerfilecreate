@@ -1,4 +1,4 @@
-name: Manual Cordova Android Build
+name: build cordova app
 
 on:
   push:
@@ -7,7 +7,6 @@ on:
     paths:
       - 'timp/dist/**'
       - '.github/workflows/**'
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,6 +20,14 @@ jobs:
       with:
         node-version: 18
 
+    - name: Install Angular Project Dependencies
+      run: npm install
+      working-directory: ./timp
+
+    - name: Build Angular App
+      run: npx ng build --configuration production
+      working-directory: ./timp
+
     - name: Install Cordova CLI
       run: npm install -g cordova
 
@@ -33,7 +40,7 @@ jobs:
     - name: Copy Angular Build to Cordova WWW
       run: |
         rm -rf timp/www/*
-        cp -r dist/** timp/www/
+        cp -r timp/dist/** timp/www/
 
     - name: Inject cordova.js into index.html
       run: |
