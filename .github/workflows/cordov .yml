@@ -31,7 +31,7 @@ jobs:
       uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
-        java-version: '11'
+        java-version: '17'
 
     - name: ✅ Set up Gradle
       uses: gradle/gradle-build-action@v3
@@ -65,7 +65,7 @@ jobs:
         cordova build android
 
     - name: 📤 Upload APK Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: android-apk
         path: timp/platforms/android/app/build/outputs/apk/debug/app-debug.apk
