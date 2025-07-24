@@ -1,0 +1,56 @@
+name: Manual Cordova Android Build
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'timp/dist/**'
+      - '.github/workflows/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install Cordova CLI
+      run: npm install -g cordova
+
+    - name: Create Cordova Project
+      run: |
+        cordova create timp com.thinkrms.timp TIMP
+        cd timp
+        cordova platform add android@13.0.0
+
+    - name: Copy Angular Build to Cordova WWW
+      run: |
+        rm -rf timp/www/*
+        cp -r dist/** timp/www/
+
+    - name: Inject cordova.js into index.html
+      run: |
+        sed -i '/<\/body>/i <script src="cordova.js"></script>' timp/www/index.html
+
+    - name: Prepare Cordova Android Platform
+      run: |
+        cd timp
+        cordova prepare android
+
+    - name: Build Cordova Android
+      run: |
+        cd timp
+        cordova build android
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: android-apk
+        path: timp/platforms/android/app/build/outputs/apk/debug/app-debug.apk
